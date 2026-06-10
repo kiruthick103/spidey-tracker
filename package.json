@@ -1,8 +1,11 @@
 {
-  "name": "spiderman-calorie-tracker",
+  "name": "spidey-tracker",
   "version": "1.0.0",
-  "description": "A Spider-Man themed Calorie Tracker web application with dashboard, calculator, meal management, camera, and charts.",
+  "description": "Spider-Man themed Calorie Tracker with AI Food Recognition.",
   "main": "server.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js"
