@@ -24,7 +24,7 @@
   --ring-bg: rgba(255, 255, 255, 0.06);
   --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   --shadow-strong: 0 12px 48px rgba(0, 0, 0, 0.6);
-  --blur: blur(20px);
+  --blur: blur(8px);
   --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -184,9 +184,9 @@ body::after {
   background:
     linear-gradient(
       to bottom,
-      rgba(8, 9, 14, 0.74) 0%,
-      rgba(8, 9, 14, 0.66) 45%,
-      rgba(8, 9, 14, 0.8) 100%
+      rgba(8, 9, 14, 0.4) 0%,
+      rgba(8, 9, 14, 0.32) 45%,
+      rgba(8, 9, 14, 0.48) 100%
     );
 }
 
@@ -194,9 +194,9 @@ body::after {
   background:
     linear-gradient(
       to bottom,
-      rgba(244, 245, 250, 0.78) 0%,
-      rgba(244, 245, 250, 0.7) 45%,
-      rgba(244, 245, 250, 0.82) 100%
+      rgba(244, 245, 250, 0.42) 0%,
+      rgba(244, 245, 250, 0.34) 45%,
+      rgba(244, 245, 250, 0.5) 100%
     );
 }
 
@@ -556,8 +556,8 @@ body::after {
    =========================================== */
 .glass {
   background: var(--bg-card);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
   border: 1px solid var(--glass-border);
   border-radius: 16px;
 }
