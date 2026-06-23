@@ -98,13 +98,15 @@ const CREATE_TABLE_SQL = `
       } else {
         // Fallback: try PostgREST schema query to verify
         console.log("ℹ️ No SUPABASE_SERVICE_ROLE_KEY — manual setup required.");
-        console.log("
-📋 Run this SQL in Supabase SQL Editor (https://app.supabase.com → SQL Editor):\n" + CREATE_TABLE_SQL);
+        console.log(`
+📋 Run this SQL in Supabase SQL Editor (https://app.supabase.com → SQL Editor):
+` + CREATE_TABLE_SQL);
       }
     } catch (migrateErr) {
       console.error("⚠️ Auto-migration failed:", migrateErr.message);
-      console.log("
-📋 Run this SQL in Supabase SQL Editor (https://app.supabase.com → SQL Editor):\n" + CREATE_TABLE_SQL);
+      console.log(`
+📋 Run this SQL in Supabase SQL Editor (https://app.supabase.com → SQL Editor):
+` + CREATE_TABLE_SQL);
     }
   } else if (error) {
     console.error("Supabase connection error:", error.message);
@@ -282,7 +284,7 @@ app.post("/api/analyze-food", async (req, res) => {
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const prompt = `You are a nutrition expert. Analyze this food image and provide:
 1. The name of the food item(s) visible
