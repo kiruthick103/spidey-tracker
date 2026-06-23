@@ -155,6 +155,107 @@ body::after {
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 200'%3E%3Cpath d='M0 200 L0 140 L30 140 L30 100 L60 100 L60 140 L90 140 L90 80 L120 80 L120 140 L150 140 L150 120 L180 120 L180 50 L200 50 L200 120 L220 120 L220 90 L250 90 L250 140 L280 140 L280 110 L310 110 L310 60 L340 60 L340 110 L370 110 L370 140 L400 140 L400 130 L430 130 L430 70 L460 70 L460 130 L490 130 L490 140 L520 140 L520 100 L550 100 L550 140 L580 140 L580 120 L610 120 L610 80 L640 80 L640 120 L670 120 L670 140 L700 140 L700 90 L730 90 L730 140 L760 140 L760 110 L790 110 L790 60 L820 60 L820 110 L850 110 L850 140 L880 140 L880 100 L910 100 L910 130 L940 130 L940 140 L970 140 L970 70 L1000 70 L1000 140 L1030 140 L1030 120 L1060 120 L1060 50 L1090 50 L1090 120 L1120 120 L1120 140 L1150 140 L1150 100 L1200 100 L1200 200 Z' fill='rgba(0,0,0,0.04)'/%3E%3C/svg%3E");
 }
 
+/* ===========================================
+   SPIDEY HERO BANNER (Spider-Man / Miles)
+   =========================================== */
+.spidey-hero-banner {
+  position: relative;
+  width: 100%;
+  min-height: 340px;
+  margin-bottom: 1.5rem;
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  isolation: isolate;
+  /* dark = Miles Morales palette */
+  --suit-main: #16161f;
+  --suit-dark: #050507;
+  --suit-accent: #e23636;
+  --suit-web: #e23636;
+  --suit-emblem: #e23636;
+  --suit-eye: #ffffff;
+  --suit-eye-rim: #e23636;
+  --hero-word: #e23636;
+  --hero-glow: rgba(226, 54, 54, 0.85);
+  background:
+    radial-gradient(circle at 50% 32%, #4a1016 0%, #1b0a0d 60%, #0d0608 100%);
+  box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.55), 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="light"] .spidey-hero-banner {
+  /* light = classic Spider-Man palette */
+  --suit-main: #d62b2b;
+  --suit-dark: #7c1420;
+  --suit-accent: #1b3b8a;
+  --suit-web: #5c0d16;
+  --suit-emblem: #11131a;
+  --suit-eye: #ffffff;
+  --suit-eye-rim: #11131a;
+  --hero-word: #ffd34e;
+  --hero-glow: rgba(27, 59, 138, 0.55);
+  background:
+    radial-gradient(circle at 50% 30%, #ff6a52 0%, #e0301f 55%, #b21f17 100%);
+}
+
+.hero-wordmark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -54%);
+  z-index: 1;
+  font-weight: 900;
+  font-size: clamp(4.5rem, 17vw, 13rem);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  color: var(--hero-word);
+  text-shadow: 0 8px 0 rgba(0, 0, 0, 0.18), 0 18px 40px rgba(0, 0, 0, 0.35);
+  user-select: none;
+  white-space: nowrap;
+}
+
+.hero-figure {
+  position: relative;
+  z-index: 2;
+  height: 360px;
+  display: flex;
+  align-items: flex-end;
+  filter: drop-shadow(0 18px 26px rgba(0, 0, 0, 0.55))
+          drop-shadow(0 0 22px var(--hero-glow));
+  animation: heroFloat 5s ease-in-out infinite;
+}
+
+.hero-char {
+  height: 100%;
+  width: auto;
+  display: block;
+}
+
+.hero-tagline {
+  position: absolute;
+  right: 1.5rem;
+  bottom: 1.1rem;
+  z-index: 3;
+  max-width: 280px;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+}
+.hero-tagline strong { display: block; font-size: 1rem; margin-bottom: 0.25rem; }
+
+@keyframes heroFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+
+@media (max-width: 640px) {
+  .spidey-hero-banner { min-height: 260px; }
+  .hero-figure { height: 250px; }
+  .hero-tagline { display: none; }
+}
+
 /* Animated web-swinging hero */
 .spidey-swing {
   position: fixed;
@@ -1184,7 +1285,7 @@ select.input-glass {
 @media (prefers-reduced-motion: reduce) {
   .web-bg, .spider-mask-bg, .loading-ring-progress, .loading-spider-icon,
   .logo-icon, .camera-scan-frame, .meal-item, .loading-screen,
-  .spidey-swing, .swing-arm {
+  .spidey-swing, .swing-arm, .hero-figure {
     animation: none !important;
   }
 }
