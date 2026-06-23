@@ -304,9 +304,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const video = document.getElementById("heroVideo");
     if (!video) return;
     const primary = t === "dark" ? "/video/miles.mp4" : "/video/spiderman.mp4";
+    const poster = t === "dark" ? "/video/miles-poster.jpg" : "/video/spiderman-poster.jpg";
     const fallback = "/video/spiderman.mp4";
     const target = video.dataset.src === primary ? null : primary;
     if (!target) return;
+    video.poster = poster;
     video.dataset.src = primary;
     video.onerror = () => {
       if (video.currentSrc.endsWith("miles.mp4")) {

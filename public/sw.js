@@ -1,4 +1,4 @@
-const CACHE_NAME = "spidey-tracker-v10";
+const CACHE_NAME = "spidey-tracker-v11";
 const STATIC_ASSETS = ["/", "/index.html", "/css/style.css", "/js/app.js", "/manifest.json", "/icons/icon-192.svg", "/icons/icon-512.svg"];
 
 // Install — cache static shell
@@ -13,6 +13,12 @@ self.addEventListener("install", (event) => {
 // Fetch — network-first for API, cache-first for static assets
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
+
+  // Let the browser stream media directly so HTTP range/partial (206)
+  // responses work — caching full video in the SW causes playback lag.
+  if (event.request.headers.has("range") || url.pathname.endsWith(".mp4")) {
+    return;
+  }
 
   // API requests: network first, no cache
   if (url.pathname.startsWith("/api/")) {
