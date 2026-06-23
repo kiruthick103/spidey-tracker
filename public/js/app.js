@@ -151,6 +151,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ---- Supabase Realtime: live-sync meal changes across devices ----
   let realtimeChannel = null;
+  let realtimeActive = false;
   async function initRealtime() {
     try {
       if (!window.supabase || typeof window.supabase.createClient !== "function") return;
@@ -169,11 +170,27 @@ document.addEventListener("DOMContentLoaded", () => {
           () => { loadMeals(); }
         )
         .subscribe((status) => {
-          if (status === "SUBSCRIBED") console.log("🕸️ Realtime connected");
+          if (status === "SUBSCRIBED") {
+            realtimeActive = true;
+            console.log("🕸️ Realtime connected");
+          }
         });
     } catch (err) {
       console.error("Realtime init failed:", err);
     }
+  }
+
+  // Fallback sync so other devices' changes still appear even if the
+  // Supabase realtime publication isn't enabled for the meals table.
+  function initSyncFallbacks() {
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") loadMeals();
+    });
+    // Poll as a safety net (realtime gives instant updates; this covers the
+    // case where the realtime publication isn't enabled for the meals table).
+    setInterval(() => {
+      if (document.visibilityState === "visible") loadMeals();
+    }, 30000);
   }
 
   function formatDate(dateStr) {
@@ -1305,6 +1322,7 @@ document.addEventListener("DOMContentLoaded", () => {
   loadMeals().then(() => {
     hideLoading();
     initRealtime();
+    initSyncFallbacks();
   });
 
   els.calcAge.value = 25;
