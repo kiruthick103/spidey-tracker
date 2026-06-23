@@ -258,6 +258,72 @@
               <span class="result-unit">cal/day</span>
             </div>
           </div>
+
+          <!-- Personalized Analysis -->
+          <div id="calcAnalysis" class="calc-analysis">
+            <div class="analysis-header">
+              <span class="analysis-icon" aria-hidden="true">🕸️</span>
+              <h3>Your Analysis</h3>
+            </div>
+
+            <!-- BMI -->
+            <div class="analysis-block">
+              <div class="analysis-block-head">
+                <span class="analysis-block-title">Body Mass Index</span>
+                <span id="bmiValue" class="analysis-bmi-value">-</span>
+                <span id="bmiCategory" class="analysis-bmi-tag">-</span>
+              </div>
+              <div class="bmi-scale" aria-hidden="true">
+                <div class="bmi-scale-track">
+                  <span class="bmi-seg bmi-seg-under"></span>
+                  <span class="bmi-seg bmi-seg-normal"></span>
+                  <span class="bmi-seg bmi-seg-over"></span>
+                  <span class="bmi-seg bmi-seg-obese"></span>
+                </div>
+                <span id="bmiMarker" class="bmi-marker"></span>
+              </div>
+              <p id="healthyRange" class="analysis-note">-</p>
+            </div>
+
+            <!-- Macros -->
+            <div class="analysis-block">
+              <div class="analysis-block-head">
+                <span class="analysis-block-title">Recommended Macros</span>
+                <span class="analysis-block-sub">at maintenance</span>
+              </div>
+              <div class="macro-grid">
+                <div class="macro-card macro-protein">
+                  <span id="macroProtein" class="macro-grams">-</span>
+                  <span class="macro-name">Protein</span>
+                  <span id="macroProteinCal" class="macro-sub">-</span>
+                </div>
+                <div class="macro-card macro-carbs">
+                  <span id="macroCarbs" class="macro-grams">-</span>
+                  <span class="macro-name">Carbs</span>
+                  <span id="macroCarbsCal" class="macro-sub">-</span>
+                </div>
+                <div class="macro-card macro-fat">
+                  <span id="macroFat" class="macro-grams">-</span>
+                  <span class="macro-name">Fat</span>
+                  <span id="macroFatCal" class="macro-sub">-</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Hydration -->
+            <div class="analysis-block analysis-water">
+              <span class="analysis-icon" aria-hidden="true">💧</span>
+              <div class="analysis-block-head">
+                <span class="analysis-block-title">Daily Water</span>
+                <span id="waterValue" class="analysis-water-value">-</span>
+              </div>
+            </div>
+
+            <!-- Insight -->
+            <p id="analysisInsight" class="analysis-insight">-</p>
+
+            <button id="useMaintenanceBtn" class="btn-primary btn-full">Set maintenance as my daily goal</button>
+          </div>
         </div>
       </div>
     </section>

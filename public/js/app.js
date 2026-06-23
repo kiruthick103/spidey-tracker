@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let dailyGoal = parseInt(localStorage.getItem("spideyGoal")) || 2000;
   let theme = localStorage.getItem("spideyTheme") || "dark";
   let charts = {};
+  let lastMaintenance = null;
 
   // ---- DOM Refs ----
   const $ = (sel) => document.querySelector(sel);
@@ -56,6 +57,22 @@ document.addEventListener("DOMContentLoaded", () => {
     resultMaintenance: $("#resultMaintenance"),
     resultLoss: $("#resultLoss"),
     resultGain: $("#resultGain"),
+
+    // Calculator - Analysis
+    calcAnalysis: $("#calcAnalysis"),
+    bmiValue: $("#bmiValue"),
+    bmiCategory: $("#bmiCategory"),
+    bmiMarker: $("#bmiMarker"),
+    healthyRange: $("#healthyRange"),
+    macroProtein: $("#macroProtein"),
+    macroProteinCal: $("#macroProteinCal"),
+    macroCarbs: $("#macroCarbs"),
+    macroCarbsCal: $("#macroCarbsCal"),
+    macroFat: $("#macroFat"),
+    macroFatCal: $("#macroFatCal"),
+    waterValue: $("#waterValue"),
+    analysisInsight: $("#analysisInsight"),
+    useMaintenanceBtn: $("#useMaintenanceBtn"),
 
     // Meals
     mealForm: $("#mealForm"),
@@ -814,10 +831,101 @@ document.addEventListener("DOMContentLoaded", () => {
     els.resultGain.textContent = weightGain;
     els.calcResults.classList.remove("hidden");
 
+    lastMaintenance = maintenance;
+    renderAnalysis({ age, gender, height, weight, activity, maintenance });
+
     // Re-trigger animation
     els.calcResults.style.animation = "none";
     els.calcResults.offsetHeight; // Force reflow
     els.calcResults.style.animation = "fadeUp 0.4s ease";
+  }
+
+  // ---- Personalized Analysis (derived from calculator inputs) ----
+  function renderAnalysis({ age, gender, height, weight, activity, maintenance }) {
+    if (!els.calcAnalysis) return;
+
+    // BMI
+    const heightM = height / 100;
+    const bmi = weight / (heightM * heightM);
+    const bmiRounded = bmi.toFixed(1);
+
+    let category, catClass;
+    if (bmi < 18.5) {
+      category = "Underweight";
+      catClass = "under";
+    } else if (bmi < 25) {
+      category = "Normal";
+      catClass = "normal";
+    } else if (bmi < 30) {
+      category = "Overweight";
+      catClass = "over";
+    } else {
+      category = "Obese";
+      catClass = "obese";
+    }
+
+    els.bmiValue.textContent = bmiRounded;
+    els.bmiCategory.textContent = category;
+    els.bmiCategory.className = "analysis-bmi-tag bmi-" + catClass;
+
+    // Marker position on a 15–40 BMI scale
+    const pct = Math.max(0, Math.min(100, ((bmi - 15) / (40 - 15)) * 100));
+    els.bmiMarker.style.left = pct + "%";
+
+    // Healthy weight range for this height (BMI 18.5–24.9)
+    const lowWeight = (18.5 * heightM * heightM).toFixed(1);
+    const highWeight = (24.9 * heightM * heightM).toFixed(1);
+    els.healthyRange.textContent = `Healthy weight range for your height: ${lowWeight}–${highWeight} kg`;
+
+    // Macros at maintenance: protein 1.6 g/kg, fat 25% of calories, carbs fill the rest
+    const proteinG = Math.round(weight * 1.6);
+    const proteinCal = proteinG * 4;
+    const fatCal = Math.round(maintenance * 0.25);
+    const fatG = Math.round(fatCal / 9);
+    const carbsCal = Math.max(0, maintenance - proteinCal - fatCal);
+    const carbsG = Math.round(carbsCal / 4);
+
+    els.macroProtein.textContent = proteinG + "g";
+    els.macroProteinCal.textContent = proteinCal + " cal";
+    els.macroCarbs.textContent = carbsG + "g";
+    els.macroCarbsCal.textContent = carbsCal + " cal";
+    els.macroFat.textContent = fatG + "g";
+    els.macroFatCal.textContent = fatCal + " cal";
+
+    // Hydration: ~35 ml per kg
+    const waterL = (weight * 0.035).toFixed(1);
+    els.waterValue.textContent = `${waterL} L (${Math.round(waterL / 0.25)} glasses)`;
+
+    // Personalized insight
+    els.analysisInsight.textContent = buildInsight({ bmi, category, age, gender, activity, maintenance, lowWeight, highWeight, weight });
+
+    els.calcAnalysis.classList.add("visible");
+  }
+
+  function buildInsight({ bmi, category, activity, maintenance, lowWeight, highWeight, weight }) {
+    const activityLabels = {
+      "1.2": "mostly sedentary",
+      "1.375": "lightly active",
+      "1.55": "moderately active",
+      "1.725": "very active",
+      "1.9": "extremely active",
+    };
+    const activityText = activityLabels[String(activity)] || "active";
+
+    let msg;
+    if (category === "Normal") {
+      msg = `Your BMI of ${bmi.toFixed(1)} is in the healthy range — nice work, web-slinger! Eat around ${maintenance} cal/day to maintain, and keep protein high to stay strong.`;
+    } else if (category === "Underweight") {
+      const gain = (lowWeight - weight).toFixed(1);
+      msg = `Your BMI of ${bmi.toFixed(1)} is below the healthy range. Aiming for a gentle surplus (~${maintenance + 500} cal/day) could help you reach ${lowWeight} kg — about ${gain} kg to go.`;
+    } else if (category === "Overweight") {
+      const lose = (weight - highWeight).toFixed(1);
+      msg = `Your BMI of ${bmi.toFixed(1)} is slightly above the healthy range. A modest deficit (~${maintenance - 500} cal/day) could bring you toward ${highWeight} kg — roughly ${lose} kg away.`;
+    } else {
+      const lose = (weight - highWeight).toFixed(1);
+      msg = `Your BMI of ${bmi.toFixed(1)} is in the obese range. A sustainable deficit (~${maintenance - 500} cal/day) and regular movement can help; a healthy target is around ${highWeight} kg (~${lose} kg to go).`;
+    }
+    return `${msg} You logged yourself as ${activityText}, which is already factored into your ${maintenance} cal maintenance.`;
   }
 
   // ---- Camera ----
@@ -1112,6 +1220,15 @@ document.addEventListener("DOMContentLoaded", () => {
   els.calcBtn.addEventListener("click", calculateCalories);
   els.calcActivity.addEventListener("keydown", (e) => {
     if (e.key === "Enter") calculateCalories();
+  });
+
+  // Apply maintenance calories as the daily goal
+  els.useMaintenanceBtn.addEventListener("click", () => {
+    if (!lastMaintenance) return;
+    dailyGoal = Math.round(lastMaintenance);
+    saveState();
+    renderAll();
+    navigateTo("dashboard");
   });
 
   // Close modals on overlay click

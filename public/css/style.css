@@ -841,6 +841,93 @@ select.input-glass {
 .highlight-red .result-value { color: var(--danger); }
 
 /* ===========================================
+   CALCULATOR ANALYSIS
+   =========================================== */
+.calc-analysis {
+  display: none;
+  margin-top: 1.4rem;
+  padding-top: 1.4rem;
+  border-top: 1px solid var(--glass-border);
+  animation: fadeUp 0.45s ease;
+}
+.calc-analysis.visible { display: block; }
+
+.analysis-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
+.analysis-header h3 { font-size: 1.05rem; font-weight: 800; }
+.analysis-icon { font-size: 1.2rem; }
+
+.analysis-block {
+  padding: 1rem;
+  margin-bottom: 0.9rem;
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02);
+}
+.analysis-block-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.5rem; }
+.analysis-block-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-secondary); font-weight: 700; }
+.analysis-block-sub { font-size: 0.65rem; color: var(--text-secondary); }
+.analysis-note { font-size: 0.78rem; color: var(--text-secondary); margin-top: 0.6rem; }
+
+/* BMI */
+.analysis-bmi-value { font-size: 1.5rem; font-weight: 900; margin-left: auto; }
+.analysis-bmi-tag { font-size: 0.65rem; font-weight: 800; padding: 0.2rem 0.6rem; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.6px; }
+.analysis-bmi-tag.bmi-under { background: rgba(26, 115, 232, 0.15); color: var(--accent-blue); }
+.analysis-bmi-tag.bmi-normal { background: rgba(52, 211, 153, 0.15); color: var(--success); }
+.analysis-bmi-tag.bmi-over { background: rgba(251, 191, 36, 0.15); color: var(--warning); }
+.analysis-bmi-tag.bmi-obese { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+
+.bmi-scale { position: relative; margin-top: 0.9rem; }
+.bmi-scale-track { display: flex; height: 8px; border-radius: 999px; overflow: hidden; }
+.bmi-seg { height: 100%; }
+.bmi-seg-under { flex: 14; background: var(--accent-blue); }
+.bmi-seg-normal { flex: 26; background: var(--success); }
+.bmi-seg-over { flex: 20; background: var(--warning); }
+.bmi-seg-obese { flex: 40; background: var(--danger); }
+.bmi-marker {
+  position: absolute;
+  top: -4px;
+  width: 4px;
+  height: 16px;
+  background: var(--text-primary);
+  border-radius: 999px;
+  transform: translateX(-50%);
+  box-shadow: 0 0 0 2px var(--bg-primary);
+  transition: left 0.5s ease;
+}
+
+/* Macros */
+.macro-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; margin-top: 0.8rem; }
+.macro-card {
+  text-align: center;
+  padding: 0.8rem 0.4rem;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.02);
+}
+.macro-grams { display: block; font-size: 1.25rem; font-weight: 900; }
+.macro-name { display: block; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-secondary); margin-top: 0.15rem; font-weight: 700; }
+.macro-sub { display: block; font-size: 0.6rem; color: var(--text-secondary); margin-top: 0.1rem; }
+.macro-card.macro-protein .macro-grams { color: var(--accent-blue); }
+.macro-card.macro-carbs .macro-grams { color: var(--gold); }
+.macro-card.macro-fat .macro-grams { color: var(--danger); }
+
+/* Hydration */
+.analysis-water { display: flex; align-items: center; gap: 0.7rem; }
+.analysis-water .analysis-block-head { flex-direction: column; gap: 0.1rem; }
+.analysis-water-value { font-size: 1.1rem; font-weight: 800; color: var(--accent-blue); }
+
+/* Insight */
+.analysis-insight {
+  font-size: 0.85rem;
+  line-height: 1.6;
+  padding: 0.9rem 1rem;
+  margin-bottom: 1rem;
+  border-left: 3px solid var(--accent-red);
+  border-radius: 8px;
+  background: rgba(226, 54, 54, 0.05);
+}
+
+/* ===========================================
    CAMERA
    =========================================== */
 .camera-card { text-align: center; }
