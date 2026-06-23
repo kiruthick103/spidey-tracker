@@ -156,170 +156,68 @@ body::after {
 }
 
 /* ===========================================
-   SPIDEY HERO BANNER (Spider-Man / Miles)
+   PAGE HEADER + LIVE SYNC STATUS
    =========================================== */
-.spidey-hero-banner {
-  position: relative;
-  width: 100%;
-  min-height: 340px;
-  margin-bottom: 1.5rem;
-  border-radius: 20px;
-  overflow: hidden;
+.page-header {
   display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  isolation: isolate;
-  /* dark = Miles Morales palette */
-  --suit-main: #16161f;
-  --suit-dark: #050507;
-  --suit-accent: #e23636;
-  --suit-web: #e23636;
-  --suit-emblem: #e23636;
-  --suit-eye: #ffffff;
-  --suit-eye-rim: #e23636;
-  --hero-word: #e23636;
-  --hero-glow: rgba(226, 54, 54, 0.85);
-  background:
-    radial-gradient(circle at 50% 32%, #4a1016 0%, #1b0a0d 60%, #0d0608 100%);
-  box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.55), 0 12px 40px rgba(0, 0, 0, 0.4);
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
 }
 
-[data-theme="light"] .spidey-hero-banner {
-  /* light = classic Spider-Man palette */
-  --suit-main: #d62b2b;
-  --suit-dark: #7c1420;
-  --suit-accent: #1b3b8a;
-  --suit-web: #5c0d16;
-  --suit-emblem: #11131a;
-  --suit-eye: #ffffff;
-  --suit-eye-rim: #11131a;
-  --hero-word: #ffd34e;
-  --hero-glow: rgba(27, 59, 138, 0.55);
-  background:
-    radial-gradient(circle at 50% 30%, #ff6a52 0%, #e0301f 55%, #b21f17 100%);
+.page-subtitle {
+  margin-top: 0.2rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.6));
 }
 
-.hero-wordmark {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -54%);
-  z-index: 1;
-  font-weight: 900;
-  font-size: clamp(4.5rem, 17vw, 13rem);
-  line-height: 0.9;
-  letter-spacing: -0.04em;
-  color: var(--hero-word);
-  text-shadow: 0 8px 0 rgba(0, 0, 0, 0.18), 0 18px 40px rgba(0, 0, 0, 0.35);
-  user-select: none;
+.sync-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border: 1px solid rgba(120, 120, 140, 0.28);
+  background: rgba(120, 120, 140, 0.1);
+  color: var(--text-secondary, rgba(255, 255, 255, 0.7));
   white-space: nowrap;
 }
 
-.hero-figure {
-  position: relative;
-  z-index: 2;
-  height: 360px;
-  display: flex;
-  align-items: flex-end;
-  filter: drop-shadow(0 18px 26px rgba(0, 0, 0, 0.55))
-          drop-shadow(0 0 22px var(--hero-glow));
-  animation: heroFloat 5s ease-in-out infinite;
+.sync-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #8a8a99;
+  flex-shrink: 0;
 }
 
-.hero-char {
-  height: 100%;
-  width: auto;
-  display: block;
+.sync-badge.is-live {
+  border-color: rgba(34, 197, 94, 0.45);
+  background: rgba(34, 197, 94, 0.12);
+  color: #22c55e;
+}
+.sync-badge.is-live .sync-dot {
+  background: #22c55e;
+  box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.55);
+  animation: syncPulse 2s ease-in-out infinite;
 }
 
-.hero-tagline {
-  position: absolute;
-  right: 1.5rem;
-  bottom: 1.1rem;
-  z-index: 3;
-  max-width: 280px;
-  font-size: 0.82rem;
-  line-height: 1.4;
-  color: rgba(255, 255, 255, 0.92);
-  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+.sync-badge.is-offline {
+  border-color: rgba(239, 68, 68, 0.45);
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
 }
-.hero-tagline strong { display: block; font-size: 1rem; margin-bottom: 0.25rem; }
+.sync-badge.is-offline .sync-dot { background: #ef4444; }
 
-@keyframes heroFloat {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-10px); }
-}
-
-@media (max-width: 640px) {
-  .spidey-hero-banner { min-height: 260px; }
-  .hero-figure { height: 250px; }
-  .hero-tagline { display: none; }
-}
-
-/* Animated web-swinging hero */
-.spidey-swing {
-  position: fixed;
-  top: -70px;
-  left: 0;
-  width: 120px;
-  height: 380px;
-  z-index: 0;
-  pointer-events: none;
-  will-change: transform;
-  animation: swingDrift 24s linear infinite;
-}
-
-.swing-arm {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  width: 120px;
-  height: 360px;
-  margin-left: -60px;
-  transform-origin: 50% 0;
-  animation: swingPendulum 3.6s ease-in-out infinite alternate;
-}
-
-.swing-line {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  width: 2px;
-  height: 232px;
-  transform: translateX(-50%);
-  background: linear-gradient(to bottom, transparent, var(--swing-web) 12%, var(--swing-web));
-}
-
-.swing-hero {
-  position: absolute;
-  top: 214px;
-  left: 50%;
-  width: 66px;
-  transform: translateX(-50%);
-}
-
-/* Dark mode = Miles Morales: black suit with red glow */
-.spidey-swing { color: #16161f; opacity: 0.92; }
-:root { --swing-web: rgba(226, 54, 54, 0.55); --swing-emblem: #e23636; }
-.swing-hero { filter: drop-shadow(0 0 10px rgba(226, 54, 54, 0.95)) drop-shadow(0 0 3px rgba(226, 54, 54, 0.85)); }
-
-/* Light mode = classic Spider-Man: bright red with blue accent */
-[data-theme="light"] {
-  --swing-web: rgba(26, 115, 232, 0.4);
-  --swing-emblem: #1a73e8;
-}
-[data-theme="light"] .spidey-swing { color: #e23636; opacity: 0.7; }
-[data-theme="light"] .swing-hero { filter: drop-shadow(0 0 6px rgba(26, 115, 232, 0.55)); }
-
-@keyframes swingDrift {
-  0%   { transform: translateX(-180px) translateY(-10px); }
-  50%  { transform: translateX(48vw) translateY(60px); }
-  100% { transform: translateX(110vw) translateY(-10px); }
-}
-
-@keyframes swingPendulum {
-  0%   { transform: rotate(-24deg); }
-  100% { transform: rotate(24deg); }
+@keyframes syncPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5); }
+  70%  { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
 }
 
 /* ===========================================
@@ -1285,7 +1183,7 @@ select.input-glass {
 @media (prefers-reduced-motion: reduce) {
   .web-bg, .spider-mask-bg, .loading-ring-progress, .loading-spider-icon,
   .logo-icon, .camera-scan-frame, .meal-item, .loading-screen,
-  .spidey-swing, .swing-arm, .hero-figure {
+  .sync-badge.is-live .sync-dot {
     animation: none !important;
   }
 }

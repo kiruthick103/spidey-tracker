@@ -38,24 +38,6 @@
   <div class="city-skyline" aria-hidden="true"></div>
   <div class="ambient-glow" aria-hidden="true"></div>
 
-  <!-- Animated web-swinging hero (themed: classic in light, Miles in dark) -->
-  <div class="spidey-swing" aria-hidden="true">
-    <div class="swing-arm">
-      <span class="swing-line"></span>
-      <svg class="swing-hero" viewBox="0 0 80 118" fill="none">
-        <g stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M40 46 L40 6" />
-          <path d="M40 62 L45 90" />
-          <path d="M40 66 L18 80" />
-          <path d="M45 90 L30 112" />
-          <path d="M45 90 L62 106" />
-        </g>
-        <circle cx="40" cy="50" r="12" fill="currentColor" />
-        <path class="swing-emblem" d="M40 44 l-6 5 q6 4 6 9 q0-5 6-9 z" fill="var(--swing-emblem)" />
-      </svg>
-    </div>
-  </div>
-
   <!-- Header (Glass Nav Bar) -->
   <header class="header" role="banner">
     <div class="header-content">
@@ -102,91 +84,17 @@
   <main class="main" role="main">
     <!-- Dashboard Section -->
     <section id="dashboard" class="section active" aria-label="Dashboard">
-      <!-- Cinematic hero banner (Spider-Man in light, Miles Morales in dark) -->
-      <div class="spidey-hero-banner" aria-label="Spidey hero">
-        <span class="hero-wordmark" aria-hidden="true">Spidey</span>
-        <div class="hero-figure" aria-hidden="true">
-          <svg class="hero-char" viewBox="0 0 320 480" role="img" aria-label="Masked hero">
-            <!-- back web strands -->
-            <g class="hero-webs" stroke="var(--suit-web)" stroke-width="1.4" fill="none" opacity="0.5">
-              <path d="M20 30 L150 175" />
-              <path d="M300 30 L170 175" />
-              <path d="M160 0 L160 130" />
-            </g>
-
-            <!-- LEGS -->
-            <path class="suit" d="M132 250 C128 320 122 390 118 452 C117 466 100 466 99 452 C96 392 104 312 116 250 Z" fill="var(--suit-main)"/>
-            <path class="suit" d="M188 250 C192 320 198 390 202 452 C203 466 220 466 221 452 C224 392 216 312 204 250 Z" fill="var(--suit-main)"/>
-            <path class="suit-dark" d="M132 250 C130 312 126 372 122 432 C129 372 130 312 132 262 Z" fill="var(--suit-dark)" opacity="0.55"/>
-            <path class="suit-dark" d="M188 250 C190 312 194 372 198 432 C191 372 190 312 188 262 Z" fill="var(--suit-dark)" opacity="0.55"/>
-            <!-- boots -->
-            <path class="suit-accent" d="M96 446 C95 462 100 470 108 470 C118 470 122 462 121 448 C112 452 104 451 96 446 Z" fill="var(--suit-accent)"/>
-            <path class="suit-accent" d="M224 446 C225 462 220 470 212 470 C202 470 198 462 199 448 C208 452 216 451 224 446 Z" fill="var(--suit-accent)"/>
-
-            <!-- ARMS -->
-            <path class="suit" d="M118 150 C92 168 70 210 58 262 C55 276 72 282 78 268 C92 224 110 192 132 176 Z" fill="var(--suit-main)"/>
-            <path class="suit" d="M202 150 C228 168 250 210 262 262 C265 276 248 282 242 268 C228 224 210 192 188 176 Z" fill="var(--suit-main)"/>
-            <!-- fists -->
-            <circle class="suit-accent" cx="66" cy="276" r="15" fill="var(--suit-accent)"/>
-            <circle class="suit-accent" cx="254" cy="276" r="15" fill="var(--suit-accent)"/>
-
-            <!-- TORSO -->
-            <path class="suit" d="M118 148 C140 132 180 132 202 148 C208 180 206 220 196 252 C176 262 144 262 124 252 C114 220 112 180 118 148 Z" fill="var(--suit-main)"/>
-            <!-- side shading -->
-            <path class="suit-dark" d="M118 148 C126 180 130 220 138 250 C130 250 126 250 124 252 C114 220 112 180 118 148 Z" fill="var(--suit-dark)" opacity="0.5"/>
-            <path class="suit-dark" d="M202 148 C194 180 190 220 182 250 C190 250 194 250 196 252 C206 220 208 180 202 148 Z" fill="var(--suit-dark)" opacity="0.5"/>
-
-            <!-- chest spider emblem -->
-            <g class="hero-emblem" fill="var(--suit-emblem)">
-              <ellipse cx="160" cy="196" rx="6.5" ry="11"/>
-              <circle cx="160" cy="183" r="4.5"/>
-              <g stroke="var(--suit-emblem)" stroke-width="2.4" stroke-linecap="round" fill="none">
-                <path d="M154 190 C140 184 132 176 126 168"/>
-                <path d="M154 196 C138 194 128 192 118 190"/>
-                <path d="M154 202 C140 206 130 212 122 220"/>
-                <path d="M155 207 C146 216 140 226 136 236"/>
-                <path d="M166 190 C180 184 188 176 194 168"/>
-                <path d="M166 196 C182 194 192 192 202 190"/>
-                <path d="M166 202 C180 206 190 212 198 220"/>
-                <path d="M165 207 C174 216 180 226 184 236"/>
-              </g>
-            </g>
-
-            <!-- torso web lines -->
-            <g class="hero-webs" stroke="var(--suit-web)" stroke-width="1" fill="none" opacity="0.5">
-              <path d="M160 150 L160 250"/>
-              <path d="M132 156 C150 200 150 220 150 250"/>
-              <path d="M188 156 C170 200 170 220 170 250"/>
-            </g>
-
-            <!-- NECK -->
-            <path class="suit-dark" d="M148 120 L172 120 L170 142 L150 142 Z" fill="var(--suit-dark)"/>
-
-            <!-- HEAD / MASK -->
-            <ellipse class="suit" cx="160" cy="74" rx="42" ry="50" fill="var(--suit-main)"/>
-            <path class="suit-dark" d="M160 24 C138 24 120 44 119 74 C124 50 140 34 160 32 Z" fill="var(--suit-dark)" opacity="0.4"/>
-            <!-- mask web lines -->
-            <g class="hero-webs" stroke="var(--suit-web)" stroke-width="0.9" fill="none" opacity="0.55">
-              <path d="M160 26 L160 120"/>
-              <path d="M122 60 C150 66 170 66 198 60"/>
-              <path d="M124 86 C150 80 170 80 196 86"/>
-              <path d="M134 40 L150 60 M186 40 L170 60"/>
-              <path d="M126 104 L150 92 M194 104 L170 92"/>
-            </g>
-            <!-- eyes -->
-            <path class="hero-eye" d="M148 66 C140 60 124 62 120 74 C124 86 142 88 150 80 C152 75 152 70 148 66 Z" fill="var(--suit-eye)"/>
-            <path class="hero-eye" d="M172 66 C180 60 196 62 200 74 C196 86 178 88 170 80 C168 75 168 70 172 66 Z" fill="var(--suit-eye)"/>
-            <path class="hero-eye-rim" d="M148 66 C140 60 124 62 120 74 C124 86 142 88 150 80 C152 75 152 70 148 66 Z" fill="none" stroke="var(--suit-eye-rim)" stroke-width="2"/>
-            <path class="hero-eye-rim" d="M172 66 C180 60 196 62 200 74 C196 86 178 88 170 80 C168 75 168 70 172 66 Z" fill="none" stroke="var(--suit-eye-rim)" stroke-width="2"/>
-          </svg>
+      <!-- Dashboard header -->
+      <div class="page-header">
+        <div class="page-header-text">
+          <h2 class="section-title">Dashboard</h2>
+          <p class="page-subtitle">Your nutrition at a glance</p>
         </div>
-        <div class="hero-tagline">
-          <strong>Swing into the rhythm.</strong>
-          Track every calorie with spider-sense precision — log meals, smash your goals, and watch your week light up.
-        </div>
+        <span id="syncStatus" class="sync-badge" role="status" aria-live="polite">
+          <span class="sync-dot"></span>
+          <span class="sync-label">Connecting…</span>
+        </span>
       </div>
-
-      <h2 class="section-title">Dashboard</h2>
 
       <!-- Progress Ring + Stats -->
       <div class="dashboard-hero">

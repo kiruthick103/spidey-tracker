@@ -149,16 +149,31 @@ document.addEventListener("DOMContentLoaded", () => {
     renderAll();
   }
 
+  // ---- Live sync status badge ----
+  function setSyncStatus(state, label) {
+    const badge = document.getElementById("syncStatus");
+    if (!badge) return;
+    badge.classList.remove("is-live", "is-offline");
+    if (state === "live") badge.classList.add("is-live");
+    else if (state === "offline") badge.classList.add("is-offline");
+    const labelEl = badge.querySelector(".sync-label");
+    if (labelEl) labelEl.textContent = label;
+  }
+
   // ---- Supabase Realtime: live-sync meal changes across devices ----
   let realtimeChannel = null;
   let realtimeActive = false;
   async function initRealtime() {
     try {
-      if (!window.supabase || typeof window.supabase.createClient !== "function") return;
+      if (!window.supabase || typeof window.supabase.createClient !== "function") {
+        setSyncStatus("default", "Local only");
+        return;
+      }
       const res = await fetch("/api/config");
       const cfg = await res.json();
       if (!cfg.supabaseUrl || !cfg.supabaseAnonKey) {
         console.warn("Realtime disabled: Supabase not configured.");
+        setSyncStatus("default", "Local only");
         return;
       }
       const client = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
@@ -172,11 +187,19 @@ document.addEventListener("DOMContentLoaded", () => {
         .subscribe((status) => {
           if (status === "SUBSCRIBED") {
             realtimeActive = true;
+            setSyncStatus("live", "Live");
             console.log("🕸️ Realtime connected");
+          } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+            realtimeActive = false;
+            setSyncStatus("default", "Auto-sync");
+          } else if (status === "CLOSED") {
+            realtimeActive = false;
+            setSyncStatus("offline", "Offline");
           }
         });
     } catch (err) {
       console.error("Realtime init failed:", err);
+      setSyncStatus("offline", "Offline");
     }
   }
 
