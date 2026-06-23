@@ -126,8 +126,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let mediaStream = null;
 
-  // ---- Helper: Today's date string ----
-  const todayStr = () => new Date().toISOString().split("T")[0];
+  // ---- Helper: Today's date string (local, not UTC) ----
+  const todayStr = () => localDateStr(new Date());
 
   // ---- Helpers ----
   function getTodayMeals() {
@@ -147,6 +147,33 @@ document.addEventListener("DOMContentLoaded", () => {
       meals = [];
     }
     renderAll();
+  }
+
+  // ---- Supabase Realtime: live-sync meal changes across devices ----
+  let realtimeChannel = null;
+  async function initRealtime() {
+    try {
+      if (!window.supabase || typeof window.supabase.createClient !== "function") return;
+      const res = await fetch("/api/config");
+      const cfg = await res.json();
+      if (!cfg.supabaseUrl || !cfg.supabaseAnonKey) {
+        console.warn("Realtime disabled: Supabase not configured.");
+        return;
+      }
+      const client = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
+      realtimeChannel = client
+        .channel("meals-realtime")
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "meals" },
+          () => { loadMeals(); }
+        )
+        .subscribe((status) => {
+          if (status === "SUBSCRIBED") console.log("🕸️ Realtime connected");
+        });
+    } catch (err) {
+      console.error("Realtime init failed:", err);
+    }
   }
 
   function formatDate(dateStr) {
@@ -315,7 +342,7 @@ document.addEventListener("DOMContentLoaded", () => {
     for (let i = 0; i < 7; i++) {
       const d = new Date(today);
       d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().split("T")[0];
+      const dateStr = localDateStr(d);
       const dayM = getMealsForDate(dateStr);
       const cal = dayM.reduce((s, m) => s + m.calories, 0);
       if (cal > 0) {
@@ -387,25 +414,41 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ---- Weekly Summary ----
-  function renderWeeklySummary() {
-    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    const today = new Date();
-    let html = "";
+  // ---- Local date string (avoids UTC off-by-one from toISOString) ----
+  function localDateStr(d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  }
 
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(today);
-      d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().split("T")[0];
+  // ---- Weekly Summary (Monday → Sunday, real calendar dates) ----
+  function renderWeeklySummary() {
+    const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    const today = new Date();
+    const todayKey = localDateStr(today);
+
+    // Monday of the current calendar week (Mon=0 … Sun=6)
+    const mondayOffset = (today.getDay() + 6) % 7;
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - mondayOffset);
+
+    let html = "";
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      const dateStr = localDateStr(d);
       const dayM = getMealsForDate(dateStr);
       const cal = dayM.reduce((s, m) => s + m.calories, 0);
-      const isToday = i === 0;
+      const isToday = dateStr === todayKey;
+      const isFuture = dateStr > todayKey;
       const emoji =
         cal === 0 ? "😴" : cal >= dailyGoal ? "🕷️" : cal >= dailyGoal * 0.5 ? "💪" : "🍽️";
 
       html += `
-      <div class="weekly-day" style="${isToday ? "border-color: var(--accent-red);" : ""}">
-        <div class="day-name">${days[d.getDay()]}</div>
+      <div class="weekly-day${isToday ? " is-today" : ""}${isFuture ? " is-future" : ""}">
+        <div class="day-name">${days[i]}</div>
+        <div class="day-date">${d.getDate()}</div>
         <div class="day-emoji">${emoji}</div>
         <div class="day-calories">${cal}</div>
       </div>`;
@@ -598,17 +641,20 @@ document.addEventListener("DOMContentLoaded", () => {
       },
     };
 
-    // 1. Daily Chart (This Week)
+    // 1. Daily Chart (This Week — Monday → Sunday)
     const dailyCtx = document.getElementById("dailyChart");
     if (dailyCtx) {
       const days = [];
       const calData = [];
       const today = new Date();
+      const mondayOffset = (today.getDay() + 6) % 7;
+      const monday = new Date(today);
+      monday.setDate(today.getDate() - mondayOffset);
 
-      for (let i = 6; i >= 0; i--) {
-        const d = new Date(today);
-        d.setDate(d.getDate() - i);
-        const dateStr = d.toISOString().split("T")[0];
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
+        const dateStr = localDateStr(d);
         const dayM = getMealsForDate(dateStr);
         const cal = dayM.reduce((s, m) => s + m.calories, 0);
         days.push(d.toLocaleDateString("en-US", { weekday: "short" }));
@@ -697,7 +743,7 @@ document.addEventListener("DOMContentLoaded", () => {
       for (let i = 6; i >= 0; i--) {
         const d = new Date(today);
         d.setDate(d.getDate() - i);
-        const dateStr = d.toISOString().split("T")[0];
+        const dateStr = localDateStr(d);
         const dayM = getMealsForDate(dateStr);
         const cal = dayM.reduce((s, m) => s + m.calories, 0);
         days.push(d.toLocaleDateString("en-US", { weekday: "short" }));
@@ -748,7 +794,7 @@ document.addEventListener("DOMContentLoaded", () => {
       for (let i = 6; i >= 0; i--) {
         const d = new Date(today);
         d.setDate(d.getDate() - i);
-        const dateStr = d.toISOString().split("T")[0];
+        const dateStr = localDateStr(d);
         const dayM = getMealsForDate(dateStr);
         days.push(d.toLocaleDateString("en-US", { weekday: "short" }));
         breakfast.push(
@@ -1139,7 +1185,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!name || !calories) return;
 
-    await addMeal(name, calories, type);
+    await addMeal(name, calories, type, todayStr());
     els.quickLogForm.reset();
     els.quickMealName.focus();
     toggleQuickLog();
@@ -1157,7 +1203,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    await addMeal(name, calories, type);
+    await addMeal(name, calories, type, todayStr());
     els.mealForm.reset();
     els.mealName.focus();
   });
@@ -1255,9 +1301,10 @@ document.addEventListener("DOMContentLoaded", () => {
   setTheme(theme);
   navigateTo("dashboard");
 
-  // Load meals from API before rendering
+  // Load meals from API before rendering, then start realtime sync
   loadMeals().then(() => {
     hideLoading();
+    initRealtime();
   });
 
   els.calcAge.value = 25;

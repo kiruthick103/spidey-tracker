@@ -21,7 +21,7 @@ app.use(helmet({
       scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
       imgSrc: ["'self'", "data:", "blob:"],
-      connectSrc: ["'self'", "blob:"],
+      connectSrc: ["'self'", "blob:", "https://*.supabase.co", "wss://*.supabase.co"],
       fontSrc: ["'self'", "https://cdn.jsdelivr.net"],
     },
   },
@@ -331,6 +331,14 @@ Respond in JSON format with these fields:
       details: error.message,
     });
   }
+});
+
+// ---- Public config (safe anon key) for browser realtime ----
+app.get("/api/config", (_req, res) => {
+  res.json({
+    supabaseUrl: process.env.SUPABASE_URL || null,
+    supabaseAnonKey: process.env.SUPABASE_ANON_KEY || null,
+  });
 });
 
 // ---- Health Check (for Render monitoring) ----

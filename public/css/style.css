@@ -155,6 +155,72 @@ body::after {
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 200'%3E%3Cpath d='M0 200 L0 140 L30 140 L30 100 L60 100 L60 140 L90 140 L90 80 L120 80 L120 140 L150 140 L150 120 L180 120 L180 50 L200 50 L200 120 L220 120 L220 90 L250 90 L250 140 L280 140 L280 110 L310 110 L310 60 L340 60 L340 110 L370 110 L370 140 L400 140 L400 130 L430 130 L430 70 L460 70 L460 130 L490 130 L490 140 L520 140 L520 100 L550 100 L550 140 L580 140 L580 120 L610 120 L610 80 L640 80 L640 120 L670 120 L670 140 L700 140 L700 90 L730 90 L730 140 L760 140 L760 110 L790 110 L790 60 L820 60 L820 110 L850 110 L850 140 L880 140 L880 100 L910 100 L910 130 L940 130 L940 140 L970 140 L970 70 L1000 70 L1000 140 L1030 140 L1030 120 L1060 120 L1060 50 L1090 50 L1090 120 L1120 120 L1120 140 L1150 140 L1150 100 L1200 100 L1200 200 Z' fill='rgba(0,0,0,0.04)'/%3E%3C/svg%3E");
 }
 
+/* Animated web-swinging hero */
+.spidey-swing {
+  position: fixed;
+  top: -70px;
+  left: 0;
+  width: 120px;
+  height: 380px;
+  z-index: 0;
+  pointer-events: none;
+  will-change: transform;
+  animation: swingDrift 24s linear infinite;
+}
+
+.swing-arm {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 120px;
+  height: 360px;
+  margin-left: -60px;
+  transform-origin: 50% 0;
+  animation: swingPendulum 3.6s ease-in-out infinite alternate;
+}
+
+.swing-line {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 2px;
+  height: 232px;
+  transform: translateX(-50%);
+  background: linear-gradient(to bottom, transparent, var(--swing-web) 12%, var(--swing-web));
+}
+
+.swing-hero {
+  position: absolute;
+  top: 214px;
+  left: 50%;
+  width: 66px;
+  transform: translateX(-50%);
+}
+
+/* Dark mode = Miles Morales: black suit with red glow */
+.spidey-swing { color: #16161f; opacity: 0.92; }
+:root { --swing-web: rgba(226, 54, 54, 0.55); --swing-emblem: #e23636; }
+.swing-hero { filter: drop-shadow(0 0 10px rgba(226, 54, 54, 0.95)) drop-shadow(0 0 3px rgba(226, 54, 54, 0.85)); }
+
+/* Light mode = classic Spider-Man: bright red with blue accent */
+[data-theme="light"] {
+  --swing-web: rgba(26, 115, 232, 0.4);
+  --swing-emblem: #1a73e8;
+}
+[data-theme="light"] .spidey-swing { color: #e23636; opacity: 0.7; }
+[data-theme="light"] .swing-hero { filter: drop-shadow(0 0 6px rgba(26, 115, 232, 0.55)); }
+
+@keyframes swingDrift {
+  0%   { transform: translateX(-180px) translateY(-10px); }
+  50%  { transform: translateX(48vw) translateY(60px); }
+  100% { transform: translateX(110vw) translateY(-10px); }
+}
+
+@keyframes swingPendulum {
+  0%   { transform: rotate(-24deg); }
+  100% { transform: rotate(24deg); }
+}
+
 /* ===========================================
    LOADING SCREEN
    =========================================== */
@@ -1088,8 +1154,16 @@ select.input-glass {
 .weekly-day:hover { border-color: var(--accent-red); background: rgba(226, 54, 54, 0.04); }
 
 .weekly-day .day-name { font-size: 0.55rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
+.weekly-day .day-date { font-size: 0.7rem; font-weight: 700; color: var(--text-primary); margin-top: 1px; }
 .weekly-day .day-calories { font-size: 0.75rem; font-weight: 800; color: var(--accent-red); }
 .weekly-day .day-emoji { font-size: 1rem; }
+
+.weekly-day.is-today {
+  border-color: var(--accent-red);
+  background: rgba(226, 54, 54, 0.08);
+  box-shadow: 0 0 0 1px var(--accent-red) inset;
+}
+.weekly-day.is-future { opacity: 0.45; }
 
 .meals-mini-list { max-height: 180px; overflow-y: auto; }
 .meals-mini-list .meal-item { padding: 0.5rem; }
@@ -1109,7 +1183,8 @@ select.input-glass {
    =========================================== */
 @media (prefers-reduced-motion: reduce) {
   .web-bg, .spider-mask-bg, .loading-ring-progress, .loading-spider-icon,
-  .logo-icon, .camera-scan-frame, .meal-item, .loading-screen {
+  .logo-icon, .camera-scan-frame, .meal-item, .loading-screen,
+  .spidey-swing, .swing-arm {
     animation: none !important;
   }
 }
