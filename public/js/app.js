@@ -294,7 +294,31 @@ document.addEventListener("DOMContentLoaded", () => {
     theme = t;
     document.documentElement.setAttribute("data-theme", t);
     els.themeToggle.textContent = t === "dark" ? "🌙" : "☀️";
+    updateHeroVideo(t);
     saveState();
+  }
+
+  // Swap the dashboard hero clip: Miles in dark, Spider-Man in light.
+  // Falls back to the Spider-Man clip if the requested file is missing.
+  function updateHeroVideo(t) {
+    const video = document.getElementById("heroVideo");
+    if (!video) return;
+    const primary = t === "dark" ? "/video/miles.mp4" : "/video/spiderman.mp4";
+    const fallback = "/video/spiderman.mp4";
+    const target = video.dataset.src === primary ? null : primary;
+    if (!target) return;
+    video.dataset.src = primary;
+    video.onerror = () => {
+      if (video.currentSrc.endsWith("miles.mp4")) {
+        video.onerror = null;
+        video.src = fallback;
+        video.load();
+        video.play().catch(() => {});
+      }
+    };
+    video.src = primary;
+    video.load();
+    video.play().catch(() => {});
   }
 
   function toggleTheme() {

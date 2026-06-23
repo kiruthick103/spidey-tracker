@@ -1,4 +1,4 @@
-const CACHE_NAME = "spidey-tracker-v5";
+const CACHE_NAME = "spidey-tracker-v6";
 const STATIC_ASSETS = ["/", "/index.html", "/css/style.css", "/js/app.js", "/manifest.json", "/icons/icon-192.svg", "/icons/icon-512.svg"];
 
 // Install — cache static shell
