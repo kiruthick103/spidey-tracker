@@ -21,7 +21,7 @@ app.use(helmet({
       scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
       imgSrc: ["'self'", "data:", "blob:"],
-      connectSrc: ["'self'", "blob:"],
+      connectSrc: ["'self'", "blob:", "https://*.supabase.co", "wss://*.supabase.co"],
       fontSrc: ["'self'", "https://cdn.jsdelivr.net"],
     },
   },
@@ -98,13 +98,11 @@ const CREATE_TABLE_SQL = `
       } else {
         // Fallback: try PostgREST schema query to verify
         console.log("ℹ️ No SUPABASE_SERVICE_ROLE_KEY — manual setup required.");
-        console.log("
-📋 Run this SQL in Supabase SQL Editor (https://app.supabase.com → SQL Editor):\n" + CREATE_TABLE_SQL);
+        console.log("\n📋 Run this SQL in Supabase SQL Editor (https://app.supabase.com → SQL Editor):\n" + CREATE_TABLE_SQL);
       }
     } catch (migrateErr) {
       console.error("⚠️ Auto-migration failed:", migrateErr.message);
-      console.log("
-📋 Run this SQL in Supabase SQL Editor (https://app.supabase.com → SQL Editor):\n" + CREATE_TABLE_SQL);
+      console.log("\n📋 Run this SQL in Supabase SQL Editor (https://app.supabase.com → SQL Editor):\n" + CREATE_TABLE_SQL);
     }
   } else if (error) {
     console.error("Supabase connection error:", error.message);
@@ -333,6 +331,14 @@ Respond in JSON format with these fields:
       details: error.message,
     });
   }
+});
+
+// ---- Public config (safe anon key) for browser realtime ----
+app.get("/api/config", (_req, res) => {
+  res.json({
+    supabaseUrl: process.env.SUPABASE_URL || null,
+    supabaseAnonKey: process.env.SUPABASE_ANON_KEY || null,
+  });
 });
 
 // ---- Health Check (for Render monitoring) ----

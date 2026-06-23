@@ -16,6 +16,7 @@
   <link rel="preload" href="/css/style.css" as="style" />
   <link rel="preload" href="/js/app.js" as="script" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
   <link rel="stylesheet" href="/css/style.css" />
 </head>
 <body>
@@ -36,6 +37,12 @@
   <div class="spider-mask-bg" aria-hidden="true"></div>
   <div class="city-skyline" aria-hidden="true"></div>
   <div class="ambient-glow" aria-hidden="true"></div>
+
+  <!-- Themed full-screen hero video background (Spider-Man in light, Miles in dark) -->
+  <div class="media-bg" aria-hidden="true">
+    <video id="heroVideo" class="media-bg-video" autoplay muted loop playsinline preload="auto" poster="/video/miles-poster.jpg"></video>
+    <div class="media-bg-scrim"></div>
+  </div>
 
   <!-- Header (Glass Nav Bar) -->
   <header class="header" role="banner">
@@ -83,7 +90,17 @@
   <main class="main" role="main">
     <!-- Dashboard Section -->
     <section id="dashboard" class="section active" aria-label="Dashboard">
-      <h2 class="section-title">Dashboard</h2>
+      <!-- Dashboard header -->
+      <div class="page-header">
+        <div class="page-header-text">
+          <h2 class="section-title">Dashboard</h2>
+          <p class="page-subtitle">Your nutrition at a glance</p>
+        </div>
+        <span id="syncStatus" class="sync-badge" role="status" aria-live="polite">
+          <span class="sync-dot"></span>
+          <span class="sync-label">Connecting…</span>
+        </span>
+      </div>
 
       <!-- Progress Ring + Stats -->
       <div class="dashboard-hero">
@@ -104,7 +121,7 @@
               <span class="ring-stat-label">Consumed</span>
             </div>
             <div class="ring-stat">
-              <span class="ring-stat-value" id="caloriesRemaining">2000</span>
+              <span class="ring-stat-value" id="caloriesRemaining">—</span>
               <span class="ring-stat-label">Remaining</span>
             </div>
             <div class="ring-stat">
@@ -121,7 +138,7 @@
             </div>
             <div class="stat-info">
               <span class="stat-label">Daily Goal</span>
-              <span id="dailyGoal" class="stat-value">2000</span>
+              <span id="dailyGoal" class="stat-value">—</span>
               <span class="stat-unit">calories</span>
             </div>
             <button id="editGoalBtn" class="btn-icon stat-edit" aria-label="Edit daily goal">
@@ -203,7 +220,7 @@
           <div class="form-row">
             <div class="form-group">
               <label for="calcAge">Age</label>
-              <input type="number" id="calcAge" class="input-glass" min="10" max="120" placeholder="25" />
+              <input type="number" id="calcAge" class="input-glass" min="10" max="120" placeholder="Enter age" />
             </div>
             <div class="form-group">
               <label for="calcGender">Gender</label>
@@ -216,11 +233,11 @@
           <div class="form-row">
             <div class="form-group">
               <label for="calcHeight">Height (cm)</label>
-              <input type="number" id="calcHeight" class="input-glass" min="50" max="300" step="0.1" placeholder="175" />
+              <input type="number" id="calcHeight" class="input-glass" min="50" max="300" step="0.1" placeholder="Enter height" />
             </div>
             <div class="form-group">
               <label for="calcWeight">Weight (kg)</label>
-              <input type="number" id="calcWeight" class="input-glass" min="20" max="500" step="0.1" placeholder="70" />
+              <input type="number" id="calcWeight" class="input-glass" min="20" max="500" step="0.1" placeholder="Enter weight" />
             </div>
           </div>
           <div class="form-group">
@@ -257,6 +274,72 @@
               <span id="resultGain" class="result-value">-</span>
               <span class="result-unit">cal/day</span>
             </div>
+          </div>
+
+          <!-- Personalized Analysis -->
+          <div id="calcAnalysis" class="calc-analysis">
+            <div class="analysis-header">
+              <span class="analysis-icon" aria-hidden="true">🕸️</span>
+              <h3>Your Analysis</h3>
+            </div>
+
+            <!-- BMI -->
+            <div class="analysis-block">
+              <div class="analysis-block-head">
+                <span class="analysis-block-title">Body Mass Index</span>
+                <span id="bmiValue" class="analysis-bmi-value">-</span>
+                <span id="bmiCategory" class="analysis-bmi-tag">-</span>
+              </div>
+              <div class="bmi-scale" aria-hidden="true">
+                <div class="bmi-scale-track">
+                  <span class="bmi-seg bmi-seg-under"></span>
+                  <span class="bmi-seg bmi-seg-normal"></span>
+                  <span class="bmi-seg bmi-seg-over"></span>
+                  <span class="bmi-seg bmi-seg-obese"></span>
+                </div>
+                <span id="bmiMarker" class="bmi-marker"></span>
+              </div>
+              <p id="healthyRange" class="analysis-note">-</p>
+            </div>
+
+            <!-- Macros -->
+            <div class="analysis-block">
+              <div class="analysis-block-head">
+                <span class="analysis-block-title">Recommended Macros</span>
+                <span class="analysis-block-sub">at maintenance</span>
+              </div>
+              <div class="macro-grid">
+                <div class="macro-card macro-protein">
+                  <span id="macroProtein" class="macro-grams">-</span>
+                  <span class="macro-name">Protein</span>
+                  <span id="macroProteinCal" class="macro-sub">-</span>
+                </div>
+                <div class="macro-card macro-carbs">
+                  <span id="macroCarbs" class="macro-grams">-</span>
+                  <span class="macro-name">Carbs</span>
+                  <span id="macroCarbsCal" class="macro-sub">-</span>
+                </div>
+                <div class="macro-card macro-fat">
+                  <span id="macroFat" class="macro-grams">-</span>
+                  <span class="macro-name">Fat</span>
+                  <span id="macroFatCal" class="macro-sub">-</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Hydration -->
+            <div class="analysis-block analysis-water">
+              <span class="analysis-icon" aria-hidden="true">💧</span>
+              <div class="analysis-block-head">
+                <span class="analysis-block-title">Daily Water</span>
+                <span id="waterValue" class="analysis-water-value">-</span>
+              </div>
+            </div>
+
+            <!-- Insight -->
+            <p id="analysisInsight" class="analysis-insight">-</p>
+
+            <button id="useMaintenanceBtn" class="btn-primary btn-full">Set maintenance as my daily goal</button>
           </div>
         </div>
       </div>
@@ -420,6 +503,6 @@
     </div>
   </div>
 
-  <script src="/js/app.js"></script>
+  <script src="/js/app.js" defer></script>
 </body>
 </html>

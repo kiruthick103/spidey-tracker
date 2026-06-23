@@ -8,9 +8,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ---- State ----
   let meals = [];
-  let dailyGoal = parseInt(localStorage.getItem("spideyGoal")) || 2000;
+  let dailyGoal = parseInt(localStorage.getItem("spideyGoal")) || null;
   let theme = localStorage.getItem("spideyTheme") || "dark";
   let charts = {};
+  let lastMaintenance = null;
 
   // ---- DOM Refs ----
   const $ = (sel) => document.querySelector(sel);
@@ -56,6 +57,22 @@ document.addEventListener("DOMContentLoaded", () => {
     resultMaintenance: $("#resultMaintenance"),
     resultLoss: $("#resultLoss"),
     resultGain: $("#resultGain"),
+
+    // Calculator - Analysis
+    calcAnalysis: $("#calcAnalysis"),
+    bmiValue: $("#bmiValue"),
+    bmiCategory: $("#bmiCategory"),
+    bmiMarker: $("#bmiMarker"),
+    healthyRange: $("#healthyRange"),
+    macroProtein: $("#macroProtein"),
+    macroProteinCal: $("#macroProteinCal"),
+    macroCarbs: $("#macroCarbs"),
+    macroCarbsCal: $("#macroCarbsCal"),
+    macroFat: $("#macroFat"),
+    macroFatCal: $("#macroFatCal"),
+    waterValue: $("#waterValue"),
+    analysisInsight: $("#analysisInsight"),
+    useMaintenanceBtn: $("#useMaintenanceBtn"),
 
     // Meals
     mealForm: $("#mealForm"),
@@ -109,8 +126,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let mediaStream = null;
 
-  // ---- Helper: Today's date string ----
-  const todayStr = () => new Date().toISOString().split("T")[0];
+  // ---- Helper: Today's date string (local, not UTC) ----
+  const todayStr = () => localDateStr(new Date());
 
   // ---- Helpers ----
   function getTodayMeals() {
@@ -132,13 +149,84 @@ document.addEventListener("DOMContentLoaded", () => {
     renderAll();
   }
 
+  // ---- Live sync status badge ----
+  function setSyncStatus(state, label) {
+    const badge = document.getElementById("syncStatus");
+    if (!badge) return;
+    badge.classList.remove("is-live", "is-offline");
+    if (state === "live") badge.classList.add("is-live");
+    else if (state === "offline") badge.classList.add("is-offline");
+    const labelEl = badge.querySelector(".sync-label");
+    if (labelEl) labelEl.textContent = label;
+  }
+
+  // ---- Supabase Realtime: live-sync meal changes across devices ----
+  let realtimeChannel = null;
+  let realtimeActive = false;
+  async function initRealtime() {
+    try {
+      if (!window.supabase || typeof window.supabase.createClient !== "function") {
+        setSyncStatus("default", "Local only");
+        return;
+      }
+      const res = await fetch("/api/config");
+      const cfg = await res.json();
+      if (!cfg.supabaseUrl || !cfg.supabaseAnonKey) {
+        console.warn("Realtime disabled: Supabase not configured.");
+        setSyncStatus("default", "Local only");
+        return;
+      }
+      const client = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
+      realtimeChannel = client
+        .channel("meals-realtime")
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "meals" },
+          () => { loadMeals(); }
+        )
+        .subscribe((status) => {
+          if (status === "SUBSCRIBED") {
+            realtimeActive = true;
+            setSyncStatus("live", "Live");
+            console.log("🕸️ Realtime connected");
+          } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+            realtimeActive = false;
+            setSyncStatus("default", "Auto-sync");
+          } else if (status === "CLOSED") {
+            realtimeActive = false;
+            setSyncStatus("offline", "Offline");
+          }
+        });
+    } catch (err) {
+      console.error("Realtime init failed:", err);
+      setSyncStatus("offline", "Offline");
+    }
+  }
+
+  // Fallback sync so other devices' changes still appear even if the
+  // Supabase realtime publication isn't enabled for the meals table.
+  function initSyncFallbacks() {
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") loadMeals();
+    });
+    // Poll as a safety net (realtime gives instant updates; this covers the
+    // case where the realtime publication isn't enabled for the meals table).
+    setInterval(() => {
+      if (document.visibilityState === "visible") loadMeals();
+    }, 30000);
+  }
+
   function formatDate(dateStr) {
     const d = new Date(dateStr + "T00:00:00");
     return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   }
 
   function saveState() {
-    localStorage.setItem("spideyGoal", dailyGoal);
+    if (dailyGoal) {
+      localStorage.setItem("spideyGoal", dailyGoal);
+    } else {
+      localStorage.removeItem("spideyGoal");
+    }
     localStorage.setItem("spideyTheme", theme);
   }
 
@@ -206,7 +294,33 @@ document.addEventListener("DOMContentLoaded", () => {
     theme = t;
     document.documentElement.setAttribute("data-theme", t);
     els.themeToggle.textContent = t === "dark" ? "🌙" : "☀️";
+    updateHeroVideo(t);
     saveState();
+  }
+
+  // Swap the dashboard hero clip: Miles in dark, Spider-Man in light.
+  // Falls back to the Spider-Man clip if the requested file is missing.
+  function updateHeroVideo(t) {
+    const video = document.getElementById("heroVideo");
+    if (!video) return;
+    const primary = t === "dark" ? "/video/miles.mp4" : "/video/spiderman.mp4";
+    const poster = t === "dark" ? "/video/miles-poster.jpg" : "/video/spiderman-poster.jpg";
+    const fallback = "/video/spiderman.mp4";
+    const target = video.dataset.src === primary ? null : primary;
+    if (!target) return;
+    video.poster = poster;
+    video.dataset.src = primary;
+    video.onerror = () => {
+      if (video.currentSrc.endsWith("miles.mp4")) {
+        video.onerror = null;
+        video.src = fallback;
+        video.load();
+        video.play().catch(() => {});
+      }
+    };
+    video.src = primary;
+    video.load();
+    video.play().catch(() => {});
   }
 
   function toggleTheme() {
@@ -298,7 +412,7 @@ document.addEventListener("DOMContentLoaded", () => {
     for (let i = 0; i < 7; i++) {
       const d = new Date(today);
       d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().split("T")[0];
+      const dateStr = localDateStr(d);
       const dayM = getMealsForDate(dateStr);
       const cal = dayM.reduce((s, m) => s + m.calories, 0);
       if (cal > 0) {
@@ -314,14 +428,15 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateDashboard() {
     const todayM = getTodayMeals();
     const consumed = todayM.reduce((sum, m) => sum + m.calories, 0);
-    const remaining = Math.max(0, dailyGoal - consumed);
-    const percent = Math.min(100, Math.round((consumed / dailyGoal) * 100));
+    const hasGoal = !!dailyGoal;
+    const remaining = hasGoal ? Math.max(0, dailyGoal - consumed) : null;
+    const percent = hasGoal ? Math.min(100, Math.round((consumed / dailyGoal) * 100)) : 0;
 
-    els.dailyGoal.textContent = dailyGoal;
+    els.dailyGoal.textContent = hasGoal ? dailyGoal : "—";
     els.caloriesConsumed.textContent = consumed;
-    els.caloriesRemaining.textContent = remaining;
+    els.caloriesRemaining.textContent = hasGoal ? remaining : "—";
     els.mealCount.textContent = todayM.length;
-    els.progressPercent.textContent = percent + "%";
+    els.progressPercent.textContent = hasGoal ? percent + "%" : "—";
 
     // Update progress ring
     updateProgressRing(percent);
@@ -370,25 +485,49 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ---- Weekly Summary ----
-  function renderWeeklySummary() {
-    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    const today = new Date();
-    let html = "";
+  // ---- Local date string (avoids UTC off-by-one from toISOString) ----
+  function localDateStr(d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  }
 
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(today);
-      d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().split("T")[0];
+  // ---- Weekly Summary (Monday → Sunday, real calendar dates) ----
+  function renderWeeklySummary() {
+    const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    const today = new Date();
+    const todayKey = localDateStr(today);
+
+    // Monday of the current calendar week (Mon=0 … Sun=6)
+    const mondayOffset = (today.getDay() + 6) % 7;
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - mondayOffset);
+
+    let html = "";
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      const dateStr = localDateStr(d);
       const dayM = getMealsForDate(dateStr);
       const cal = dayM.reduce((s, m) => s + m.calories, 0);
-      const isToday = i === 0;
+      const isToday = dateStr === todayKey;
+      const isFuture = dateStr > todayKey;
       const emoji =
-        cal === 0 ? "😴" : cal >= dailyGoal ? "🕷️" : cal >= dailyGoal * 0.5 ? "💪" : "🍽️";
+        cal === 0
+          ? "😴"
+          : !dailyGoal
+            ? "🍽️"
+            : cal >= dailyGoal
+              ? "🕷️"
+              : cal >= dailyGoal * 0.5
+                ? "💪"
+                : "🍽️";
 
       html += `
-      <div class="weekly-day" style="${isToday ? "border-color: var(--accent-red);" : ""}">
-        <div class="day-name">${days[d.getDay()]}</div>
+      <div class="weekly-day${isToday ? " is-today" : ""}${isFuture ? " is-future" : ""}">
+        <div class="day-name">${days[i]}</div>
+        <div class="day-date">${d.getDate()}</div>
         <div class="day-emoji">${emoji}</div>
         <div class="day-calories">${cal}</div>
       </div>`;
@@ -581,17 +720,20 @@ document.addEventListener("DOMContentLoaded", () => {
       },
     };
 
-    // 1. Daily Chart (This Week)
+    // 1. Daily Chart (This Week — Monday → Sunday)
     const dailyCtx = document.getElementById("dailyChart");
     if (dailyCtx) {
       const days = [];
       const calData = [];
       const today = new Date();
+      const mondayOffset = (today.getDay() + 6) % 7;
+      const monday = new Date(today);
+      monday.setDate(today.getDate() - mondayOffset);
 
-      for (let i = 6; i >= 0; i--) {
-        const d = new Date(today);
-        d.setDate(d.getDate() - i);
-        const dateStr = d.toISOString().split("T")[0];
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
+        const dateStr = localDateStr(d);
         const dayM = getMealsForDate(dateStr);
         const cal = dayM.reduce((s, m) => s + m.calories, 0);
         days.push(d.toLocaleDateString("en-US", { weekday: "short" }));
@@ -607,12 +749,12 @@ document.addEventListener("DOMContentLoaded", () => {
               label: "Calories",
               data: calData,
               backgroundColor: calData.map((c) =>
-                c > dailyGoal
+                dailyGoal && c > dailyGoal
                   ? "rgba(226, 54, 54, 0.6)"
                   : "rgba(26, 115, 232, 0.6)"
               ),
               borderColor: calData.map((c) =>
-                c > dailyGoal ? chartColors.red : chartColors.blue
+                dailyGoal && c > dailyGoal ? chartColors.red : chartColors.blue
               ),
               borderWidth: 1,
               borderRadius: 4,
@@ -680,7 +822,7 @@ document.addEventListener("DOMContentLoaded", () => {
       for (let i = 6; i >= 0; i--) {
         const d = new Date(today);
         d.setDate(d.getDate() - i);
-        const dateStr = d.toISOString().split("T")[0];
+        const dateStr = localDateStr(d);
         const dayM = getMealsForDate(dateStr);
         const cal = dayM.reduce((s, m) => s + m.calories, 0);
         days.push(d.toLocaleDateString("en-US", { weekday: "short" }));
@@ -731,7 +873,7 @@ document.addEventListener("DOMContentLoaded", () => {
       for (let i = 6; i >= 0; i--) {
         const d = new Date(today);
         d.setDate(d.getDate() - i);
-        const dateStr = d.toISOString().split("T")[0];
+        const dateStr = localDateStr(d);
         const dayM = getMealsForDate(dateStr);
         days.push(d.toLocaleDateString("en-US", { weekday: "short" }));
         breakfast.push(
@@ -814,10 +956,101 @@ document.addEventListener("DOMContentLoaded", () => {
     els.resultGain.textContent = weightGain;
     els.calcResults.classList.remove("hidden");
 
+    lastMaintenance = maintenance;
+    renderAnalysis({ age, gender, height, weight, activity, maintenance });
+
     // Re-trigger animation
     els.calcResults.style.animation = "none";
     els.calcResults.offsetHeight; // Force reflow
     els.calcResults.style.animation = "fadeUp 0.4s ease";
+  }
+
+  // ---- Personalized Analysis (derived from calculator inputs) ----
+  function renderAnalysis({ age, gender, height, weight, activity, maintenance }) {
+    if (!els.calcAnalysis) return;
+
+    // BMI
+    const heightM = height / 100;
+    const bmi = weight / (heightM * heightM);
+    const bmiRounded = bmi.toFixed(1);
+
+    let category, catClass;
+    if (bmi < 18.5) {
+      category = "Underweight";
+      catClass = "under";
+    } else if (bmi < 25) {
+      category = "Normal";
+      catClass = "normal";
+    } else if (bmi < 30) {
+      category = "Overweight";
+      catClass = "over";
+    } else {
+      category = "Obese";
+      catClass = "obese";
+    }
+
+    els.bmiValue.textContent = bmiRounded;
+    els.bmiCategory.textContent = category;
+    els.bmiCategory.className = "analysis-bmi-tag bmi-" + catClass;
+
+    // Marker position on a 15–40 BMI scale
+    const pct = Math.max(0, Math.min(100, ((bmi - 15) / (40 - 15)) * 100));
+    els.bmiMarker.style.left = pct + "%";
+
+    // Healthy weight range for this height (BMI 18.5–24.9)
+    const lowWeight = (18.5 * heightM * heightM).toFixed(1);
+    const highWeight = (24.9 * heightM * heightM).toFixed(1);
+    els.healthyRange.textContent = `Healthy weight range for your height: ${lowWeight}–${highWeight} kg`;
+
+    // Macros at maintenance: protein 1.6 g/kg, fat 25% of calories, carbs fill the rest
+    const proteinG = Math.round(weight * 1.6);
+    const proteinCal = proteinG * 4;
+    const fatCal = Math.round(maintenance * 0.25);
+    const fatG = Math.round(fatCal / 9);
+    const carbsCal = Math.max(0, maintenance - proteinCal - fatCal);
+    const carbsG = Math.round(carbsCal / 4);
+
+    els.macroProtein.textContent = proteinG + "g";
+    els.macroProteinCal.textContent = proteinCal + " cal";
+    els.macroCarbs.textContent = carbsG + "g";
+    els.macroCarbsCal.textContent = carbsCal + " cal";
+    els.macroFat.textContent = fatG + "g";
+    els.macroFatCal.textContent = fatCal + " cal";
+
+    // Hydration: ~35 ml per kg
+    const waterL = (weight * 0.035).toFixed(1);
+    els.waterValue.textContent = `${waterL} L (${Math.round(waterL / 0.25)} glasses)`;
+
+    // Personalized insight
+    els.analysisInsight.textContent = buildInsight({ bmi, category, age, gender, activity, maintenance, lowWeight, highWeight, weight });
+
+    els.calcAnalysis.classList.add("visible");
+  }
+
+  function buildInsight({ bmi, category, activity, maintenance, lowWeight, highWeight, weight }) {
+    const activityLabels = {
+      "1.2": "mostly sedentary",
+      "1.375": "lightly active",
+      "1.55": "moderately active",
+      "1.725": "very active",
+      "1.9": "extremely active",
+    };
+    const activityText = activityLabels[String(activity)] || "active";
+
+    let msg;
+    if (category === "Normal") {
+      msg = `Your BMI of ${bmi.toFixed(1)} is in the healthy range — nice work, web-slinger! Eat around ${maintenance} cal/day to maintain, and keep protein high to stay strong.`;
+    } else if (category === "Underweight") {
+      const gain = (lowWeight - weight).toFixed(1);
+      msg = `Your BMI of ${bmi.toFixed(1)} is below the healthy range. Aiming for a gentle surplus (~${maintenance + 500} cal/day) could help you reach ${lowWeight} kg — about ${gain} kg to go.`;
+    } else if (category === "Overweight") {
+      const lose = (weight - highWeight).toFixed(1);
+      msg = `Your BMI of ${bmi.toFixed(1)} is slightly above the healthy range. A modest deficit (~${maintenance - 500} cal/day) could bring you toward ${highWeight} kg — roughly ${lose} kg away.`;
+    } else {
+      const lose = (weight - highWeight).toFixed(1);
+      msg = `Your BMI of ${bmi.toFixed(1)} is in the obese range. A sustainable deficit (~${maintenance - 500} cal/day) and regular movement can help; a healthy target is around ${highWeight} kg (~${lose} kg to go).`;
+    }
+    return `${msg} You logged yourself as ${activityText}, which is already factored into your ${maintenance} cal maintenance.`;
   }
 
   // ---- Camera ----
@@ -1031,7 +1264,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!name || !calories) return;
 
-    await addMeal(name, calories, type);
+    await addMeal(name, calories, type, todayStr());
     els.quickLogForm.reset();
     els.quickMealName.focus();
     toggleQuickLog();
@@ -1049,7 +1282,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    await addMeal(name, calories, type);
+    await addMeal(name, calories, type, todayStr());
     els.mealForm.reset();
     els.mealName.focus();
   });
@@ -1114,6 +1347,15 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.key === "Enter") calculateCalories();
   });
 
+  // Apply maintenance calories as the daily goal
+  els.useMaintenanceBtn.addEventListener("click", () => {
+    if (!lastMaintenance) return;
+    dailyGoal = Math.round(lastMaintenance);
+    saveState();
+    renderAll();
+    navigateTo("dashboard");
+  });
+
   // Close modals on overlay click
   document.querySelectorAll(".modal").forEach((modal) => {
     modal.addEventListener("click", (e) => {
@@ -1138,9 +1380,11 @@ document.addEventListener("DOMContentLoaded", () => {
   setTheme(theme);
   navigateTo("dashboard");
 
-  // Load meals from API before rendering
+  // Load meals from API before rendering, then start realtime sync
   loadMeals().then(() => {
     hideLoading();
+    initRealtime();
+    initSyncFallbacks();
   });
 
   els.calcAge.value = 25;

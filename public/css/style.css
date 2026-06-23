@@ -24,7 +24,7 @@
   --ring-bg: rgba(255, 255, 255, 0.06);
   --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   --shadow-strong: 0 12px 48px rgba(0, 0, 0, 0.6);
-  --blur: blur(20px);
+  --blur: blur(8px);
   --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -153,6 +153,116 @@ body::after {
 
 [data-theme="light"] .city-skyline {
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 200'%3E%3Cpath d='M0 200 L0 140 L30 140 L30 100 L60 100 L60 140 L90 140 L90 80 L120 80 L120 140 L150 140 L150 120 L180 120 L180 50 L200 50 L200 120 L220 120 L220 90 L250 90 L250 140 L280 140 L280 110 L310 110 L310 60 L340 60 L340 110 L370 110 L370 140 L400 140 L400 130 L430 130 L430 70 L460 70 L460 130 L490 130 L490 140 L520 140 L520 100 L550 100 L550 140 L580 140 L580 120 L610 120 L610 80 L640 80 L640 120 L670 120 L670 140 L700 140 L700 90 L730 90 L730 140 L760 140 L760 110 L790 110 L790 60 L820 60 L820 110 L850 110 L850 140 L880 140 L880 100 L910 100 L910 130 L940 130 L940 140 L970 140 L970 70 L1000 70 L1000 140 L1030 140 L1030 120 L1060 120 L1060 50 L1090 50 L1090 120 L1120 120 L1120 140 L1150 140 L1150 100 L1200 100 L1200 200 Z' fill='rgba(0,0,0,0.04)'/%3E%3C/svg%3E");
+}
+
+/* ===========================================
+   THEMED FULL-SCREEN HERO VIDEO BACKGROUND
+   =========================================== */
+.media-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.4s ease;
+}
+
+.media-bg-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Scrim keeps cards/text readable over the moving footage.
+   Default = dark side (Miles); light overrides below. */
+.media-bg-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(8, 9, 14, 0.28) 0%,
+      rgba(8, 9, 14, 0.2) 45%,
+      rgba(8, 9, 14, 0.36) 100%
+    );
+}
+
+[data-theme="light"] .media-bg-scrim {
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(244, 245, 250, 0.3) 0%,
+      rgba(244, 245, 250, 0.22) 45%,
+      rgba(244, 245, 250, 0.4) 100%
+    );
+}
+
+/* ===========================================
+   PAGE HEADER + LIVE SYNC STATUS
+   =========================================== */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.page-subtitle {
+  margin-top: 0.2rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.6));
+}
+
+.sync-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border: 1px solid rgba(120, 120, 140, 0.28);
+  background: rgba(120, 120, 140, 0.1);
+  color: var(--text-secondary, rgba(255, 255, 255, 0.7));
+  white-space: nowrap;
+}
+
+.sync-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #8a8a99;
+  flex-shrink: 0;
+}
+
+.sync-badge.is-live {
+  border-color: rgba(34, 197, 94, 0.45);
+  background: rgba(34, 197, 94, 0.12);
+  color: #22c55e;
+}
+.sync-badge.is-live .sync-dot {
+  background: #22c55e;
+  box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.55);
+  animation: syncPulse 2s ease-in-out infinite;
+}
+
+.sync-badge.is-offline {
+  border-color: rgba(239, 68, 68, 0.45);
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+}
+.sync-badge.is-offline .sync-dot { background: #ef4444; }
+
+@keyframes syncPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5); }
+  70%  { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
 }
 
 /* ===========================================
@@ -446,8 +556,8 @@ body::after {
    =========================================== */
 .glass {
   background: var(--bg-card);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
   border: 1px solid var(--glass-border);
   border-radius: 16px;
 }
@@ -841,6 +951,93 @@ select.input-glass {
 .highlight-red .result-value { color: var(--danger); }
 
 /* ===========================================
+   CALCULATOR ANALYSIS
+   =========================================== */
+.calc-analysis {
+  display: none;
+  margin-top: 1.4rem;
+  padding-top: 1.4rem;
+  border-top: 1px solid var(--glass-border);
+  animation: fadeUp 0.45s ease;
+}
+.calc-analysis.visible { display: block; }
+
+.analysis-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
+.analysis-header h3 { font-size: 1.05rem; font-weight: 800; }
+.analysis-icon { font-size: 1.2rem; }
+
+.analysis-block {
+  padding: 1rem;
+  margin-bottom: 0.9rem;
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02);
+}
+.analysis-block-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.5rem; }
+.analysis-block-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-secondary); font-weight: 700; }
+.analysis-block-sub { font-size: 0.65rem; color: var(--text-secondary); }
+.analysis-note { font-size: 0.78rem; color: var(--text-secondary); margin-top: 0.6rem; }
+
+/* BMI */
+.analysis-bmi-value { font-size: 1.5rem; font-weight: 900; margin-left: auto; }
+.analysis-bmi-tag { font-size: 0.65rem; font-weight: 800; padding: 0.2rem 0.6rem; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.6px; }
+.analysis-bmi-tag.bmi-under { background: rgba(26, 115, 232, 0.15); color: var(--accent-blue); }
+.analysis-bmi-tag.bmi-normal { background: rgba(52, 211, 153, 0.15); color: var(--success); }
+.analysis-bmi-tag.bmi-over { background: rgba(251, 191, 36, 0.15); color: var(--warning); }
+.analysis-bmi-tag.bmi-obese { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+
+.bmi-scale { position: relative; margin-top: 0.9rem; }
+.bmi-scale-track { display: flex; height: 8px; border-radius: 999px; overflow: hidden; }
+.bmi-seg { height: 100%; }
+.bmi-seg-under { flex: 14; background: var(--accent-blue); }
+.bmi-seg-normal { flex: 26; background: var(--success); }
+.bmi-seg-over { flex: 20; background: var(--warning); }
+.bmi-seg-obese { flex: 40; background: var(--danger); }
+.bmi-marker {
+  position: absolute;
+  top: -4px;
+  width: 4px;
+  height: 16px;
+  background: var(--text-primary);
+  border-radius: 999px;
+  transform: translateX(-50%);
+  box-shadow: 0 0 0 2px var(--bg-primary);
+  transition: left 0.5s ease;
+}
+
+/* Macros */
+.macro-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; margin-top: 0.8rem; }
+.macro-card {
+  text-align: center;
+  padding: 0.8rem 0.4rem;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.02);
+}
+.macro-grams { display: block; font-size: 1.25rem; font-weight: 900; }
+.macro-name { display: block; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-secondary); margin-top: 0.15rem; font-weight: 700; }
+.macro-sub { display: block; font-size: 0.6rem; color: var(--text-secondary); margin-top: 0.1rem; }
+.macro-card.macro-protein .macro-grams { color: var(--accent-blue); }
+.macro-card.macro-carbs .macro-grams { color: var(--gold); }
+.macro-card.macro-fat .macro-grams { color: var(--danger); }
+
+/* Hydration */
+.analysis-water { display: flex; align-items: center; gap: 0.7rem; }
+.analysis-water .analysis-block-head { flex-direction: column; gap: 0.1rem; }
+.analysis-water-value { font-size: 1.1rem; font-weight: 800; color: var(--accent-blue); }
+
+/* Insight */
+.analysis-insight {
+  font-size: 0.85rem;
+  line-height: 1.6;
+  padding: 0.9rem 1rem;
+  margin-bottom: 1rem;
+  border-left: 3px solid var(--accent-red);
+  border-radius: 8px;
+  background: rgba(226, 54, 54, 0.05);
+}
+
+/* ===========================================
    CAMERA
    =========================================== */
 .camera-card { text-align: center; }
@@ -1001,8 +1198,16 @@ select.input-glass {
 .weekly-day:hover { border-color: var(--accent-red); background: rgba(226, 54, 54, 0.04); }
 
 .weekly-day .day-name { font-size: 0.55rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
+.weekly-day .day-date { font-size: 0.7rem; font-weight: 700; color: var(--text-primary); margin-top: 1px; }
 .weekly-day .day-calories { font-size: 0.75rem; font-weight: 800; color: var(--accent-red); }
 .weekly-day .day-emoji { font-size: 1rem; }
+
+.weekly-day.is-today {
+  border-color: var(--accent-red);
+  background: rgba(226, 54, 54, 0.08);
+  box-shadow: 0 0 0 1px var(--accent-red) inset;
+}
+.weekly-day.is-future { opacity: 0.45; }
 
 .meals-mini-list { max-height: 180px; overflow-y: auto; }
 .meals-mini-list .meal-item { padding: 0.5rem; }
@@ -1022,7 +1227,8 @@ select.input-glass {
    =========================================== */
 @media (prefers-reduced-motion: reduce) {
   .web-bg, .spider-mask-bg, .loading-ring-progress, .loading-spider-icon,
-  .logo-icon, .camera-scan-frame, .meal-item, .loading-screen {
+  .logo-icon, .camera-scan-frame, .meal-item, .loading-screen,
+  .sync-badge.is-live .sync-dot {
     animation: none !important;
   }
 }
