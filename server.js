@@ -98,13 +98,11 @@ const CREATE_TABLE_SQL = `
       } else {
         // Fallback: try PostgREST schema query to verify
         console.log("ℹ️ No SUPABASE_SERVICE_ROLE_KEY — manual setup required.");
-        console.log("
-📋 Run this SQL in Supabase SQL Editor (https://app.supabase.com → SQL Editor):\n" + CREATE_TABLE_SQL);
+        console.log("\n📋 Run this SQL in Supabase SQL Editor (https://app.supabase.com → SQL Editor):\n" + CREATE_TABLE_SQL);
       }
     } catch (migrateErr) {
       console.error("⚠️ Auto-migration failed:", migrateErr.message);
-      console.log("
-📋 Run this SQL in Supabase SQL Editor (https://app.supabase.com → SQL Editor):\n" + CREATE_TABLE_SQL);
+      console.log("\n📋 Run this SQL in Supabase SQL Editor (https://app.supabase.com → SQL Editor):\n" + CREATE_TABLE_SQL);
     }
   } else if (error) {
     console.error("Supabase connection error:", error.message);
