@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ---- State ----
   let meals = [];
-  let dailyGoal = parseInt(localStorage.getItem("spideyGoal")) || 2000;
+  let dailyGoal = parseInt(localStorage.getItem("spideyGoal")) || null;
   let theme = localStorage.getItem("spideyTheme") || "dark";
   let charts = {};
   let lastMaintenance = null;
@@ -199,7 +199,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function saveState() {
-    localStorage.setItem("spideyGoal", dailyGoal);
+    if (dailyGoal) {
+      localStorage.setItem("spideyGoal", dailyGoal);
+    } else {
+      localStorage.removeItem("spideyGoal");
+    }
     localStorage.setItem("spideyTheme", theme);
   }
 
@@ -375,14 +379,15 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateDashboard() {
     const todayM = getTodayMeals();
     const consumed = todayM.reduce((sum, m) => sum + m.calories, 0);
-    const remaining = Math.max(0, dailyGoal - consumed);
-    const percent = Math.min(100, Math.round((consumed / dailyGoal) * 100));
+    const hasGoal = !!dailyGoal;
+    const remaining = hasGoal ? Math.max(0, dailyGoal - consumed) : null;
+    const percent = hasGoal ? Math.min(100, Math.round((consumed / dailyGoal) * 100)) : 0;
 
-    els.dailyGoal.textContent = dailyGoal;
+    els.dailyGoal.textContent = hasGoal ? dailyGoal : "—";
     els.caloriesConsumed.textContent = consumed;
-    els.caloriesRemaining.textContent = remaining;
+    els.caloriesRemaining.textContent = hasGoal ? remaining : "—";
     els.mealCount.textContent = todayM.length;
-    els.progressPercent.textContent = percent + "%";
+    els.progressPercent.textContent = hasGoal ? percent + "%" : "—";
 
     // Update progress ring
     updateProgressRing(percent);
@@ -460,7 +465,15 @@ document.addEventListener("DOMContentLoaded", () => {
       const isToday = dateStr === todayKey;
       const isFuture = dateStr > todayKey;
       const emoji =
-        cal === 0 ? "😴" : cal >= dailyGoal ? "🕷️" : cal >= dailyGoal * 0.5 ? "💪" : "🍽️";
+        cal === 0
+          ? "😴"
+          : !dailyGoal
+            ? "🍽️"
+            : cal >= dailyGoal
+              ? "🕷️"
+              : cal >= dailyGoal * 0.5
+                ? "💪"
+                : "🍽️";
 
       html += `
       <div class="weekly-day${isToday ? " is-today" : ""}${isFuture ? " is-future" : ""}">
@@ -687,12 +700,12 @@ document.addEventListener("DOMContentLoaded", () => {
               label: "Calories",
               data: calData,
               backgroundColor: calData.map((c) =>
-                c > dailyGoal
+                dailyGoal && c > dailyGoal
                   ? "rgba(226, 54, 54, 0.6)"
                   : "rgba(26, 115, 232, 0.6)"
               ),
               borderColor: calData.map((c) =>
-                c > dailyGoal ? chartColors.red : chartColors.blue
+                dailyGoal && c > dailyGoal ? chartColors.red : chartColors.blue
               ),
               borderWidth: 1,
               borderRadius: 4,
